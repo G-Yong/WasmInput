@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>MyTextField.qml</file>
+        <file>font/Alibaba-PuHuiTi-Light.otf</file>
+    </qresource>
+</RCC>
