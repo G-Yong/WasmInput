@@ -2,8 +2,6 @@
 import QtQuick.Window 2.15
 import QtQuick.Controls 2.15
 
-import ZyCppItems 1.0
-
 Window {
     id: window
 
@@ -11,10 +9,6 @@ Window {
     height: 480
     visible: true
     title: qsTr("Hello World")
-
-    Manager{
-        id: manager
-    }
 
     Column{
         id: column

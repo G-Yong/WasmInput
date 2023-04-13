@@ -1,8 +1,12 @@
-﻿#include <QGuiApplication>
+﻿#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QFontDatabase>
 
-#include <manager.h>
+#include <QWidget>
+#include <QLineEdit>
+
+#include "ZyHtmlUtil.h"
+#include "mylineedit.h"
 
 int main(int argc, char *argv[])
 {
@@ -15,11 +19,9 @@ int main(int argc, char *argv[])
 #endif
     }
 
-    qmlRegisterType<Manager>("ZyCppItems", 1, 0, "Manager");
+    qmlRegisterType<ZyHtmlUtil>("ZyCppItems", 1, 0, "ZyHtmlUtil");
 
-
-    QGuiApplication app(argc, argv);
-
+    QApplication app(argc, argv);
 
     // 设置全局字体，用于解决Qt for WebAssembly中文显示异常
     int fontId = QFontDatabase::addApplicationFont(":/font/Alibaba-PuHuiTi-Light.otf");
@@ -33,6 +35,19 @@ int main(int argc, char *argv[])
     }
 
 
+//#define QML // 注释此处来切换
+#ifdef QML
+    // 运行qml
+
+    // 注册
+    qmlRegisterSingletonType<ZyHtmlUtil>("ZyCppItems", 1, 0, "ZyHtmlUtil",[](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject * {
+        Q_UNUSED(engine)
+        Q_UNUSED(scriptEngine)
+
+        ZyHtmlUtil *util = new ZyHtmlUtil();
+        return util;
+    });
+
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
@@ -41,6 +56,18 @@ int main(int argc, char *argv[])
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
     engine.load(url);
+#else
+    // 运行widget
+    QWidget widget;
+
+    for(int i = 0; i < 10; i++)
+    {
+        MyLineEdit *mLineEdit = new MyLineEdit(&widget);
+        mLineEdit->move(10, 10 + (mLineEdit->height() + 10) * i);
+    }
+
+    widget.show();
+#endif
 
     return app.exec();
 }
