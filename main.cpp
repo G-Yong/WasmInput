@@ -4,6 +4,9 @@
 
 #include <QWidget>
 #include <QLineEdit>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 
 #include "ZyHtmlUtil.h"
 #include "mylineedit.h"
@@ -68,6 +71,20 @@ int main(int argc, char *argv[])
 
     widget.show();
 #endif
+
+    QNetworkAccessManager netMan;
+    // 测试跨域请求
+    {
+        QNetworkRequest req;
+        req.setUrl(QUrl("http://www.baidu.com"));
+
+        auto reply = netMan.get(req);
+        QObject::connect(reply, &QNetworkReply::finished, [=](){
+            qDebug() << "network reply:" << reply->readAll();
+            reply->deleteLater();
+        });
+    }
+
 
     return app.exec();
 }

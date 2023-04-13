@@ -12,7 +12,7 @@
 
 
 // 创建输入框，用于覆盖原始的qml输入框。创建的输入框的id为zyInput
-EM_JS(void, createInputX, (quint32 ptr, const char *str, const int x, const int y, const int width, const int height), {
+EM_JS(void, createInputX, (quintptr ptr, const char *str, const int x, const int y, const int width, const int height), {
           const text = UTF8ToString(str);
 
           var canvas = window.document.getElementById('qtcanvas');
@@ -51,7 +51,7 @@ EM_JS(void, createInputX, (quint32 ptr, const char *str, const int x, const int 
 
 extern "C"{
 EMSCRIPTEN_KEEPALIVE
-int setWidgetText(quint32 ptr, const char *text)
+int setWidgetText(quintptr ptr, const char *text)
 {
 //    qDebug() << "setWidgetText" << ptr << text;
 
@@ -64,6 +64,13 @@ int setWidgetText(quint32 ptr, const char *text)
 
 #endif
 
+class ClassA
+{
+public:
+    ClassA() {}
+};
+
+
 ZyHtmlUtil::ZyHtmlUtil(QObject *parent)
     : QObject{parent}
 {
@@ -73,7 +80,7 @@ int ZyHtmlUtil::showTextInput(QObject* item, QString currentText, int x, int y, 
 {
 
 #ifdef Q_OS_WASM
-    createInputX((quint32)item, currentText.toUtf8().data(), x, y, width, height);
+    createInputX((quintptr)item, currentText.toUtf8().data(), x, y, width, height);
 #endif
 
     return 0;
