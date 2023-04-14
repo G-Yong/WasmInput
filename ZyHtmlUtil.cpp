@@ -78,12 +78,6 @@ EM_JS(void, blurAllInput, (), {
 
 #endif
 
-class ClassA
-{
-public:
-    ClassA() {}
-};
-
 
 ZyHtmlUtil::ZyHtmlUtil(QObject *parent)
     : QObject{parent}
