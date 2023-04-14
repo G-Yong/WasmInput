@@ -62,6 +62,20 @@ int setWidgetText(quintptr ptr, const char *text)
 }
 }
 
+// 对所有生成的input进行blur处理
+EM_JS(void, blurAllInput, (), {
+          // 动态的 HTMLCollection 对象的问题，因此需要先转成数组在遍历
+          let inputList = Array.from(document.getElementsByTagName('input'));
+          for(let i = 0; i < inputList.length; i++){
+              let input = inputList[i];
+              if(input && input.parentElement && input.id.startsWith('zyInput_'))
+              {
+                  input.blur()
+              }
+          }
+      })
+
+
 #endif
 
 class ClassA
@@ -78,6 +92,7 @@ ZyHtmlUtil::ZyHtmlUtil(QObject *parent)
 
 int ZyHtmlUtil::showTextInput(QObject* item, QString currentText, int x, int y, int width, int height)
 {
+    blurAllInput();
 
 #ifdef Q_OS_WASM
     createInputX((quintptr)item, currentText.toUtf8().data(), x, y, width, height);
