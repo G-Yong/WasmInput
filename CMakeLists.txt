@@ -67,5 +67,11 @@ if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(WasmInput)
 endif()
 
-#target_link_options(WasmInput PRIVATE -s EXTRA_EXPORTED_RUNTIME_METHODS=[\"ccall\"])
-target_link_options(WasmInput PRIVATE -s EXTRA_EXPORTED_RUNTIME_METHODS=[\"ccall\"])
+#if(WIN32)
+#if(UNIX)
+
+if(EMSCRIPTEN)
+#if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    #target_link_options(WasmInput PRIVATE -s EXTRA_EXPORTED_RUNTIME_METHODS=[\"ccall\"])
+    target_link_options(WasmInput PRIVATE -s EXTRA_EXPORTED_RUNTIME_METHODS=[\"ccall\"])
+endif()
