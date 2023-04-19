@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
 #else
     // 运行widget
     QWidget widget;
+    widget.resize(640, 480);
 
     for(int i = 0; i < 10; i++)
     {
@@ -76,11 +77,36 @@ int main(int argc, char *argv[])
     // 测试跨域请求
     {
         QNetworkRequest req;
-        req.setUrl(QUrl("http://www.baidu.com"));
+        req.setAttribute(QNetworkRequest::CookieLoadControlAttribute, true);
+        req.setAttribute(QNetworkRequest::CookieSaveControlAttribute, true);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+        // Qt6.5可以使用这个解决cookie问题
+        req.setAttribute(QNetworkRequest::UseCredentialsAttribute, true);
+#endif
+
+
+//        // 启用withCredentials选项,解决跨域cookie的问题，好像不行
+//        req.setRawHeader("Access-Control-Allow-Credentials", "true");
+
+        // 要解决跨域的问题，最好还是服务器端添加这个：
+//        Access-Control-Allow-Origin: *
+//        Access-Control-Allow-Credentials: true
+
+        QString urlStr;
+//        urlStr = "https://api.github.com/users/github";  // 其响应中包含Access-Control-Allow-Origin: *标头
+        urlStr = "http://www.jsontest.com";  // 其响应中包含Access-Control-Allow-Origin: *标头
+//        urlStr = "http://www.baidu.com"; // 无法跨域
+
+        req.setUrl(QUrl(urlStr));
 
         auto reply = netMan.get(req);
         QObject::connect(reply, &QNetworkReply::finished, [=](){
-            qDebug() << "network reply:" << reply->readAll();
+//            qDebug() << "network reply:" << reply->readAll();
+            qDebug() << "header count:" << reply->rawHeaderList().length() << reply->rawHeaderList();
+            qDebug() << "cookie header:" << reply->header(QNetworkRequest::CookieHeader);
+            qDebug() << "set cookie header:" << reply->header(QNetworkRequest::SetCookieHeader);
+            qDebug() << reply->rawHeaderPairs();
             reply->deleteLater();
         });
     }
