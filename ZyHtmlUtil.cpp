@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QVariant>
+#include <QFileDialog>
 
 #ifdef Q_OS_WASM
 #include <emscripten.h>
@@ -13,7 +14,7 @@
 // 而 EMSCRIPTEN_KEEPALIVE 声明的函数则可以在网页里面通过 Module.ccall来调用
 
 
-// 创建输入框，用于覆盖原始的qml输入框。创建的输入框的id为zyInput
+// 创建输入框，用于覆盖原始的qml输入框。创建的输入框的id以"zyInput_"开头
 EM_JS(void, createInputX, (quintptr ptr, const char *str, const int x, const int y, const int width, const int height), {
     const text = UTF8ToString(str);
 
@@ -57,17 +58,79 @@ EM_JS(void, createInputX, (quintptr ptr, const char *str, const int x, const int
     //          console.log("createInputX complete", input.id, x, y, width, height);
 })
 
+// 读取本地电脑的文件，可多选
+EM_JS(void, readLocalFileX, (quintptr ptr), {
+    const input = document.createElement('input');
+    input.type = 'file';
+//    input.webkitdirectory = true;
+//    input.directory = true;
+    input.multiple = "multiple";
+
+    input.addEventListener('change',() => {
+            // 获取文件列表
+            const files = input.files;
+            for (let i = 0; i < files.length; i++)
+            {
+                let reader = new FileReader();
+                reader.readAsArrayBuffer(files[i]);
+                reader.onload = () => {
+                    var result = reader.result;
+                    console.log("filename", files[i].name);
+
+                    const arr = new Uint8Array(result);
+                    var length = arr.length;
+
+                    // 获取 Uint8Array 数据的底层内存地址
+                    const dataPtr = Module._malloc(arr.length);
+                    const dataOffset = dataPtr / Module.HEAPU8.BYTES_PER_ELEMENT;
+                    const dataHeap = new Uint8Array(Module.HEAPU8.buffer, dataPtr, arr.length);
+                    dataHeap.set(arr);
+
+                    console.log("uint8Array", dataOffset, length);
+                    // 调用 C++ 函数
+                    Module.ccall('processFile',
+                                 'number',
+                                 ['number', 'string', 'number', 'number'],
+                                 [ptr, files[i].name, dataOffset, length]);
+
+                    // 释放分配的内存
+                    Module._free(dataPtr);
+                }
+
+            }
+        });
+
+    input.click();
+})
+
 extern "C"{
 EMSCRIPTEN_KEEPALIVE
-int setWidgetText(quintptr ptr, const char *text)
+    int setWidgetText(quintptr ptr, const char *text)
 {
-//    qDebug() << "setWidgetText" << ptr << text;
+    //    qDebug() << "setWidgetText" << ptr << text;
 
     QObject *obj = (QObject*)ptr;
     obj->setProperty("text", text);
 
     return 0;
 }
+
+// 处理选择的文件，文件已经被读取，此处直接处理读取后的文件数据
+EMSCRIPTEN_KEEPALIVE
+    int processFile(quintptr ptr, const char *fileName, const char *data, size_t dataSize)
+{
+    qDebug() << "process file:" << ptr << fileName;
+    qDebug() << "data:" << dataSize << (uint8_t*)data;
+
+    QByteArray dataArray(data, dataSize);
+    qDebug() << "dataArray size:" << dataArray.size();
+
+    // 该函数可以调用浏览器api下载保存数据
+    QFileDialog::saveFileContent(dataArray, QString(fileName));
+
+    return 0;
+}
+
 }
 
 // 对所有生成的input进行blur处理
@@ -107,6 +170,7 @@ EM_JS(void, corsTest, (), {
 ZyHtmlUtil::ZyHtmlUtil(QObject *parent)
     : QObject{parent}
 {
+
 }
 
 int ZyHtmlUtil::showTextInput(QObject* item, QString currentText, int x, int y, int width, int height)
@@ -117,6 +181,12 @@ int ZyHtmlUtil::showTextInput(QObject* item, QString currentText, int x, int y, 
     createInputX((quintptr)item, currentText.toUtf8().data(), x, y, width, height);
 #endif
 
+    return 0;
+}
+
+int ZyHtmlUtil::readLocalFile(quintptr ptr)
+{
+    readLocalFileX(ptr);
     return 0;
 }
 

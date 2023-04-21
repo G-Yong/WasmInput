@@ -4,9 +4,12 @@
 
 #include <QWidget>
 #include <QLineEdit>
+#include <QPushButton>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+
+#include <QFileDialog>
 
 #include "ZyHtmlUtil.h"
 #include "mylineedit.h"
@@ -70,8 +73,16 @@ int main(int argc, char *argv[])
         mLineEdit->move(10, 10 + (mLineEdit->height() + 10) * i);
     }
 
+    QPushButton *button = new QPushButton(&widget);
+    button->resize(100, 20);
+    button->setText("选择文件");
+    button->move(200, 10);
+    QObject::connect(button, &QPushButton::clicked, [=](){
+        ZyHtmlUtil::readLocalFile((quintptr)nullptr);
+    });
     widget.show();
 #endif
+
 
     QNetworkAccessManager netMan;
     // 测试跨域请求
