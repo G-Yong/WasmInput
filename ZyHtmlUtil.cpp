@@ -32,6 +32,7 @@ EM_JS(void, createInputX, (quintptr ptr, const char *str, const int x, const int
     input.setAttribute('name', 'txtInput');
     input.setAttribute('value', text);
 
+    // 这样设置位置、尺寸，才能让控件“浮”在最上面
     var style = 'border:0px solid groove; position:absolute;  margin: 0px; padding: 0px; z-index: 10000; left:' + x
                 + 'px; top:' + y
                 + 'px; width:' + width
@@ -62,9 +63,9 @@ EM_JS(void, createInputX, (quintptr ptr, const char *str, const int x, const int
 EM_JS(void, readLocalFileX, (quintptr ptr), {
     const input = document.createElement('input');
     input.type = 'file';
-//    input.webkitdirectory = true;
-//    input.directory = true;
-    input.multiple = "multiple";
+    input.webkitdirectory = true;
+    input.directory = true;
+//    input.multiple = "multiple";
 
     input.addEventListener('change',() => {
             // 获取文件列表
@@ -75,7 +76,9 @@ EM_JS(void, readLocalFileX, (quintptr ptr), {
                 reader.readAsArrayBuffer(files[i]);
                 reader.onload = () => {
                     var result = reader.result;
-                    console.log("filename", files[i].name);
+                    console.log("filename", files[i].name, files[i].webkitRelativePath);
+
+                    return;
 
                     const arr = new Uint8Array(result);
                     var length = arr.length;
@@ -164,8 +167,27 @@ EM_JS(void, corsTest, (), {
           xhr.send();
       })
 
-#endif
+// 创建iframe,并显示
+EM_JS(void, createIframe, (const char *urlText, int x, int y, int width, int height), {
 
+    var url = UTF8ToString(urlText);
+
+    var iframe = document.createElement('iframe');
+    iframe.src = url;
+    iframe.scrolling = 'yes';
+
+    // 调整 Iframe 的大小和位置
+    var style = 'border:medium double rgb(250,0,255); position:absolute;  margin: 0px; padding: 0px; z-index: 10000; left:' + x
+                + 'px; top:' + y
+                + 'px; width:' + width
+                + 'px; height:' + height
+                + 'px; opacity:1.0';
+
+    iframe.style = style;
+    document.body.appendChild(iframe);
+})
+
+#endif
 
 ZyHtmlUtil::ZyHtmlUtil(QObject *parent)
     : QObject{parent}
@@ -184,9 +206,15 @@ int ZyHtmlUtil::showTextInput(QObject* item, QString currentText, int x, int y, 
     return 0;
 }
 
-int ZyHtmlUtil::readLocalFile(quintptr ptr)
+int ZyHtmlUtil::functionTest(quintptr ptr)
 {
-    readLocalFileX(ptr);
+
+#ifdef Q_OS_WASM
+    //    corsTest();
+    //    readLocalFileX(ptr);
+    createIframe("https://www.bing.com", 100, 100, 500, 300);
+#endif
+
     return 0;
 }
 

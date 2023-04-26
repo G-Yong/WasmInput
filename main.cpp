@@ -75,10 +75,10 @@ int main(int argc, char *argv[])
 
     QPushButton *button = new QPushButton(&widget);
     button->resize(100, 20);
-    button->setText("选择文件");
+    button->setText("功能测试");
     button->move(200, 10);
     QObject::connect(button, &QPushButton::clicked, [=](){
-        ZyHtmlUtil::readLocalFile((quintptr)nullptr);
+        ZyHtmlUtil::functionTest((quintptr)nullptr);
     });
     widget.show();
 #endif
@@ -121,7 +121,6 @@ int main(int argc, char *argv[])
             reply->deleteLater();
         });
     }
-
 
     return app.exec();
 }

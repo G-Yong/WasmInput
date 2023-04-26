@@ -11,7 +11,7 @@ public:
 
     Q_INVOKABLE static int showTextInput(QObject* item, QString currentText, int x, int y, int width, int height);
 
-    Q_INVOKABLE static int readLocalFile(quintptr ptr);
+    Q_INVOKABLE static int functionTest(quintptr ptr);
 
 signals:
 

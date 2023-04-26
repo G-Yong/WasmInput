@@ -10,7 +10,7 @@ TextField {
         id: mouseArea
         anchors.fill: parent
 
-        visible: Qt.platform.os == "wasm"
+        visible: Qt.platform.os === "wasm"
 
 //        onClicked: {
 //            //计算原来控件的位置，给原生html控件提供x，y，width，height
@@ -24,7 +24,7 @@ TextField {
 
         hoverEnabled: true
         onContainsMouseChanged: {
-            if(mouseArea.containsMouse == false)
+            if(!mouseArea.containsMouse)
             {
                 return
             }
